@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import ProductGrid from "../components/products/ProductGrid";
 import FilterSidebar from "../components/filters/FilterSidebar";
@@ -78,9 +78,30 @@ function ProductsPage() {
     return filteredAndSortedProducts.slice(startIndex, endIndex);
   }, [filteredAndSortedProducts, currentPage]);
 
-  useEffect(() => {
+  function handleCategoryChange(category) {
+    setSelectedCategory(category);
     setCurrentPage(1);
-  }, [selectedCategory, minPrice, maxPrice, selectedRating, sortBy]);
+  }
+
+  function handleMinPriceChange(value) {
+    setMinPrice(value);
+    setCurrentPage(1);
+  }
+
+  function handleMaxPriceChange(value) {
+    setMaxPrice(value);
+    setCurrentPage(1);
+  }
+
+  function handleRatingChange(rating) {
+    setSelectedRating(rating);
+    setCurrentPage(1);
+  }
+
+  function handleSortChange(sort) {
+    setSortBy(sort);
+    setCurrentPage(1);
+  }
 
   function handleClearFilters() {
     setSelectedCategory("");
@@ -88,6 +109,7 @@ function ProductsPage() {
     setMaxPrice("");
     setSelectedRating("");
     setSortBy("relevance");
+    setCurrentPage(1);
   }
 
   const hasActiveFilters =
@@ -147,13 +169,13 @@ function ProductsPage() {
       <div className="catalog-layout">
         <FilterSidebar
           selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={handleCategoryChange}
           minPrice={minPrice}
           maxPrice={maxPrice}
-          onMinPriceChange={setMinPrice}
-          onMaxPriceChange={setMaxPrice}
+          onMinPriceChange={handleMinPriceChange}
+          onMaxPriceChange={handleMaxPriceChange}
           selectedRating={selectedRating}
-          onRatingChange={setSelectedRating}
+          onRatingChange={handleRatingChange}
           onClearFilters={handleClearFilters}
           hasActiveFilters={hasActiveFilters}
         />
@@ -173,7 +195,7 @@ function ProductsPage() {
               of {filteredAndSortedProducts.length}
             </p>
 
-            <SortSelect sortBy={sortBy} onSortChange={setSortBy} />
+            <SortSelect sortBy={sortBy} onSortChange={handleSortChange} />
           </div>
 
           {paginatedProducts.length > 0 ? (
