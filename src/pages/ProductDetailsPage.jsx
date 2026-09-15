@@ -29,7 +29,12 @@ function ProductDetailsPage() {
   if (isLoading) {
     return (
       <main className="page">
-        <section className="product-details-state">
+        <section
+          className="product-details-state"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <p className="page-eyebrow">PRODUCT</p>
           <h1>Loading product...</h1>
           <p>We're retrieving the product details.</p>

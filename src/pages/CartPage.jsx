@@ -157,6 +157,7 @@ function CartPage() {
                         className="cart-remove-button"
                         type="button"
                         onClick={() => handleRemove(item)}
+                        aria-label={`Remove ${item.title} from cart`}
                       >
                         Remove
                       </button>

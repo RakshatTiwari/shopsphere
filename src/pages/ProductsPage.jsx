@@ -135,7 +135,12 @@ function ProductsPage() {
   if (isLoading) {
     return (
       <main className="page">
-        <section className="page-header">
+        <section
+          className="page-header"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <p className="page-eyebrow">
             {searchTerm ? "SEARCH RESULTS" : "CATALOG"}
           </p>
@@ -153,7 +158,11 @@ function ProductsPage() {
   if (isError) {
     return (
       <main className="page">
-        <section className="product-details-state">
+        <section
+          className="product-details-state"
+          role="alert"
+          aria-live="assertive"
+        >
           <p className="page-eyebrow">
             {searchTerm ? "SEARCH RESULTS" : "CATALOG"}
           </p>
