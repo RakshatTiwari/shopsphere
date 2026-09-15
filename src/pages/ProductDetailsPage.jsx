@@ -3,12 +3,17 @@ import { Link, useParams } from "react-router";
 import ProductGallery from "../components/products/ProductGallery";
 import { useCart } from "../hooks/useCart";
 import { useProduct } from "../hooks/useProduct";
+import { useWishlist } from "../hooks/useWishlist";
 import "./ProductDetailsPage.css";
 
 function ProductDetailsPage() {
   const { productId } = useParams();
+
   const { data: product, isLoading, isError, error } = useProduct(productId);
+
   const { addToCart } = useCart();
+
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [quantity, setQuantity] = useState(1);
   const [cartMessage, setCartMessage] = useState("");
@@ -63,6 +68,7 @@ function ProductDetailsPage() {
       : product.price;
 
   const isInStock = product.stock > 0;
+  const productIsInWishlist = isInWishlist(product.id);
 
   function handleDecreaseQuantity() {
     setQuantity((currentQuantity) => Math.max(1, currentQuantity - 1));
@@ -86,6 +92,10 @@ function ProductDetailsPage() {
     setCartMessage(
       `${quantity} ${quantity === 1 ? "item" : "items"} added to cart.`,
     );
+  }
+
+  function handleWishlistToggle() {
+    toggleWishlist(product);
   }
 
   return (
@@ -185,14 +195,27 @@ function ProductDetailsPage() {
               </div>
             </div>
 
-            <button
-              className="add-to-cart-button"
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!isInStock}
-            >
-              {isInStock ? "Add to Cart" : "Out of Stock"}
-            </button>
+            <div className="purchase-action-row">
+              <button
+                className="add-to-cart-button"
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!isInStock}
+              >
+                {isInStock ? "Add to Cart" : "Out of Stock"}
+              </button>
+
+              <button
+                className={`wishlist-button ${
+                  productIsInWishlist ? "wishlist-button-active" : ""
+                }`}
+                type="button"
+                onClick={handleWishlistToggle}
+                aria-pressed={productIsInWishlist}
+              >
+                {productIsInWishlist ? "♥ Saved" : "♡ Add to Wishlist"}
+              </button>
+            </div>
 
             {cartMessage && (
               <p className="cart-action-message" role="status">
