@@ -1,9 +1,17 @@
-import { useMemo, useReducer } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { CartContext } from "./cartContext";
+
+const FREE_SHIPPING_THRESHOLD = 100;
+const STANDARD_SHIPPING_COST = 9.99;
+const TAX_RATE = 0.08;
 
 const initialState = {
   items: [],
 };
+
+function roundCurrency(value) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
 
 function cartReducer(state, action) {
   switch (action.type) {
@@ -76,7 +84,7 @@ function cartReducer(state, action) {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  function addToCart(product, quantity = 1) {
+  const addToCart = useCallback((product, quantity = 1) => {
     if (!product || product.stock <= 0) {
       return;
     }
@@ -94,9 +102,9 @@ export function CartProvider({ children }) {
         quantity: safeQuantity,
       },
     });
-  }
+  }, []);
 
-  function updateQuantity(productId, quantity) {
+  const updateQuantity = useCallback((productId, quantity) => {
     dispatch({
       type: "UPDATE_QUANTITY",
       payload: {
@@ -104,20 +112,20 @@ export function CartProvider({ children }) {
         quantity,
       },
     });
-  }
+  }, []);
 
-  function removeFromCart(productId) {
+  const removeFromCart = useCallback((productId) => {
     dispatch({
       type: "REMOVE_ITEM",
       payload: productId,
     });
-  }
+  }, []);
 
-  function clearCart() {
+  const clearCart = useCallback(() => {
     dispatch({
       type: "CLEAR_CART",
     });
-  }
+  }, []);
 
   const cartItemCount = useMemo(
     () => state.items.reduce((total, item) => total + item.quantity, 0),
@@ -126,11 +134,36 @@ export function CartProvider({ children }) {
 
   const cartSubtotal = useMemo(
     () =>
-      state.items.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0,
+      roundCurrency(
+        state.items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0,
+        ),
       ),
     [state.items],
+  );
+
+  const shippingCost = useMemo(() => {
+    if (cartSubtotal === 0) {
+      return 0;
+    }
+
+    return cartSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
+  }, [cartSubtotal]);
+
+  const taxAmount = useMemo(
+    () => roundCurrency(cartSubtotal * TAX_RATE),
+    [cartSubtotal],
+  );
+
+  const cartTotal = useMemo(
+    () => roundCurrency(cartSubtotal + shippingCost + taxAmount),
+    [cartSubtotal, shippingCost, taxAmount],
+  );
+
+  const amountUntilFreeShipping = useMemo(
+    () => roundCurrency(Math.max(0, FREE_SHIPPING_THRESHOLD - cartSubtotal)),
+    [cartSubtotal],
   );
 
   const value = useMemo(
@@ -138,12 +171,29 @@ export function CartProvider({ children }) {
       items: state.items,
       cartItemCount,
       cartSubtotal,
+      shippingCost,
+      taxAmount,
+      cartTotal,
+      amountUntilFreeShipping,
+      freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
       addToCart,
       updateQuantity,
       removeFromCart,
       clearCart,
     }),
-    [state.items, cartItemCount, cartSubtotal],
+    [
+      state.items,
+      cartItemCount,
+      cartSubtotal,
+      shippingCost,
+      taxAmount,
+      cartTotal,
+      amountUntilFreeShipping,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
