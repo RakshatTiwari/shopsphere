@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router";
+import SearchBar from "../search/SearchBar";
 
 function Navbar() {
   return (
@@ -7,6 +8,10 @@ function Navbar() {
         <Link className="navbar-brand" to="/">
           ShopSphere
         </Link>
+
+        <div className="navbar-search">
+          <SearchBar />
+        </div>
 
         <nav className="navbar-links" aria-label="Primary navigation">
           <NavLink
