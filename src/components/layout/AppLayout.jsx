@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 import Navbar from "../navigation/Navbar";
+import FeedbackToast from "../feedback/FeedbackToast";
 
 function AppLayout() {
   return (
@@ -9,6 +10,8 @@ function AppLayout() {
       <div className="app-content">
         <Outlet />
       </div>
+
+      <FeedbackToast />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { WishlistProvider } from "./context/WishlistContext.jsx";
+import { FeedbackProvider } from "./context/FeedbackContext.jsx";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -20,7 +21,9 @@ createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <WishlistProvider>
-          <App />
+          <FeedbackProvider>
+            <App />
+          </FeedbackProvider>
         </WishlistProvider>
       </CartProvider>
     </QueryClientProvider>

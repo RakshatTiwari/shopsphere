@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 import ProductGallery from "../components/products/ProductGallery";
 import { useCart } from "../hooks/useCart";
+import { useFeedback } from "../hooks/useFeedback";
 import { useProduct } from "../hooks/useProduct";
 import { useWishlist } from "../hooks/useWishlist";
 import "./ProductDetailsPage.css";
@@ -13,10 +14,11 @@ function ProductDetailsPage() {
 
   const { addToCart } = useCart();
 
+  const { showFeedback } = useFeedback();
+
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [quantity, setQuantity] = useState(1);
-  const [cartMessage, setCartMessage] = useState("");
 
   if (isLoading) {
     return (
@@ -72,30 +74,35 @@ function ProductDetailsPage() {
 
   function handleDecreaseQuantity() {
     setQuantity((currentQuantity) => Math.max(1, currentQuantity - 1));
-    setCartMessage("");
   }
 
   function handleIncreaseQuantity() {
     setQuantity((currentQuantity) =>
       Math.min(product.stock, currentQuantity + 1),
     );
-    setCartMessage("");
   }
 
   function handleAddToCart() {
     if (!isInStock) {
+      showFeedback("This product is currently out of stock.", "error");
       return;
     }
 
     addToCart(product, quantity);
 
-    setCartMessage(
+    showFeedback(
       `${quantity} ${quantity === 1 ? "item" : "items"} added to cart.`,
+      "success",
     );
   }
 
   function handleWishlistToggle() {
     toggleWishlist(product);
+
+    showFeedback(
+      productIsInWishlist ? "Removed from wishlist." : "Added to wishlist.",
+      "success",
+    );
   }
 
   return (
@@ -216,12 +223,6 @@ function ProductDetailsPage() {
                 {productIsInWishlist ? "♥ Saved" : "♡ Add to Wishlist"}
               </button>
             </div>
-
-            {cartMessage && (
-              <p className="cart-action-message" role="status">
-                {cartMessage}
-              </p>
-            )}
           </section>
 
           <div className="product-details-description">

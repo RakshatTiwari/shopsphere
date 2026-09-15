@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { useCart } from "../hooks/useCart";
+import { useFeedback } from "../hooks/useFeedback";
 
 function formatCurrency(value) {
   return `$${value.toFixed(2)}`;
@@ -19,6 +20,37 @@ function CartPage() {
     amountUntilFreeShipping,
     freeShippingThreshold,
   } = useCart();
+
+  const { showFeedback } = useFeedback();
+
+  function handleDecreaseQuantity(item) {
+    if (item.quantity <= 1) {
+      return;
+    }
+
+    updateQuantity(item.id, item.quantity - 1);
+    showFeedback("Quantity updated.", "info", 1800);
+  }
+
+  function handleIncreaseQuantity(item) {
+    if (item.quantity >= item.stock) {
+      showFeedback(`Only ${item.stock} units available.`, "error");
+      return;
+    }
+
+    updateQuantity(item.id, item.quantity + 1);
+    showFeedback("Quantity updated.", "info", 1800);
+  }
+
+  function handleRemove(item) {
+    removeFromCart(item.id);
+    showFeedback("Item removed from cart.", "info");
+  }
+
+  function handleClearCart() {
+    clearCart();
+    showFeedback("Cart cleared.", "info");
+  }
 
   if (items.length === 0) {
     return (
@@ -96,9 +128,7 @@ function CartPage() {
                         <button
                           className="cart-quantity-button"
                           type="button"
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
+                          onClick={() => handleDecreaseQuantity(item)}
                           disabled={item.quantity <= 1}
                           aria-label={`Decrease quantity of ${item.title}`}
                         >
@@ -115,9 +145,7 @@ function CartPage() {
                         <button
                           className="cart-quantity-button"
                           type="button"
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
+                          onClick={() => handleIncreaseQuantity(item)}
                           disabled={item.quantity >= item.stock}
                           aria-label={`Increase quantity of ${item.title}`}
                         >
@@ -128,7 +156,7 @@ function CartPage() {
                       <button
                         className="cart-remove-button"
                         type="button"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => handleRemove(item)}
                       >
                         Remove
                       </button>
@@ -146,7 +174,7 @@ function CartPage() {
           <button
             className="cart-clear-button"
             type="button"
-            onClick={clearCart}
+            onClick={handleClearCart}
           >
             Clear cart
           </button>

@@ -1,8 +1,32 @@
 import { Link } from "react-router";
 import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
+import { useFeedback } from "../hooks/useFeedback";
 
 function WishlistPage() {
   const { items, removeFromWishlist, clearWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { showFeedback } = useFeedback();
+
+  function handleRemove(item) {
+    removeFromWishlist(item.id);
+    showFeedback("Removed from wishlist.", "info");
+  }
+
+  function handleClearWishlist() {
+    clearWishlist();
+    showFeedback("Wishlist cleared.", "info");
+  }
+
+  function handleAddToCart(item) {
+    if (item.stock <= 0) {
+      showFeedback("This product is currently out of stock.", "error");
+      return;
+    }
+
+    addToCart(item, 1);
+    showFeedback("Added to cart.", "success");
+  }
 
   if (items.length === 0) {
     return (
@@ -41,7 +65,7 @@ function WishlistPage() {
         <button
           className="wishlist-clear-button"
           type="button"
-          onClick={clearWishlist}
+          onClick={handleClearWishlist}
         >
           Clear wishlist
         </button>
@@ -85,9 +109,18 @@ function WishlistPage() {
                 </Link>
 
                 <button
+                  className="wishlist-view-button"
+                  type="button"
+                  onClick={() => handleAddToCart(item)}
+                  disabled={item.stock <= 0}
+                >
+                  {item.stock <= 0 ? "Out of stock" : "Add to cart"}
+                </button>
+
+                <button
                   className="wishlist-remove-button"
                   type="button"
-                  onClick={() => removeFromWishlist(item.id)}
+                  onClick={() => handleRemove(item)}
                   aria-label={`Remove ${item.title} from wishlist`}
                 >
                   Remove

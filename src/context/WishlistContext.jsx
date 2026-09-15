@@ -69,6 +69,7 @@ export function WishlistProvider({ children }) {
         thumbnail: product.thumbnail,
         rating: product.rating,
         category: product.category,
+        stock: product.stock,
       },
     });
   }, []);
