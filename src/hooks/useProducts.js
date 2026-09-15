@@ -26,11 +26,12 @@ export function useProducts({
       },
     ],
 
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (search) {
         return searchProducts(search, {
           limit,
           skip,
+          signal,
         });
       }
 
@@ -38,6 +39,7 @@ export function useProducts({
         return getProductsByCategory(category, {
           limit,
           skip,
+          signal,
         });
       }
 
@@ -46,6 +48,7 @@ export function useProducts({
         skip,
         sortBy,
         order,
+        signal,
       });
     },
 

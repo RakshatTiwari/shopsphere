@@ -17,6 +17,7 @@ export async function getProducts({
   skip = 0,
   sortBy,
   order,
+  signal,
 } = {}) {
   const params = new URLSearchParams({
     limit: String(limit),
@@ -31,30 +32,41 @@ export async function getProducts({
     params.set("order", order);
   }
 
-  return request(`${API_ENDPOINTS.products}?${params.toString()}`);
+  return request(`${API_ENDPOINTS.products}?${params.toString()}`, {
+    signal,
+  });
 }
 
-export async function getProduct(productId) {
-  return request(API_ENDPOINTS.product(productId));
+export async function getProduct(productId, { signal } = {}) {
+  return request(API_ENDPOINTS.product(productId), {
+    signal,
+  });
 }
 
-export async function searchProducts(query, { limit = 12, skip = 0 } = {}) {
+export async function searchProducts(
+  query,
+  { limit = 12, skip = 0, signal } = {},
+) {
   const params = new URLSearchParams({
     q: query,
     limit: String(limit),
     skip: String(skip),
   });
 
-  return request(`${API_ENDPOINTS.searchProducts}?${params.toString()}`);
+  return request(`${API_ENDPOINTS.searchProducts}?${params.toString()}`, {
+    signal,
+  });
 }
 
-export async function getCategories() {
-  return request(API_ENDPOINTS.categories);
+export async function getCategories({ signal } = {}) {
+  return request(API_ENDPOINTS.categories, {
+    signal,
+  });
 }
 
 export async function getProductsByCategory(
   category,
-  { limit = 12, skip = 0 } = {},
+  { limit = 12, skip = 0, signal } = {},
 ) {
   const params = new URLSearchParams({
     limit: String(limit),
@@ -63,5 +75,8 @@ export async function getProductsByCategory(
 
   return request(
     `${API_ENDPOINTS.categoryProducts(category)}?${params.toString()}`,
+    {
+      signal,
+    },
   );
 }
