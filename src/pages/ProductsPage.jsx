@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import ProductGrid from "../components/products/ProductGrid";
+import FilterSidebar from "../components/filters/FilterSidebar";
 
 function ProductsPage() {
-  const { data, isLoading, isError, error } = useProducts();
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const { data, isLoading, isError, error } = useProducts({
+    category: selectedCategory,
+  });
 
   if (isLoading) {
     return (
@@ -50,7 +56,16 @@ function ProductsPage() {
         <p className="catalog-count">{data.total} products</p>
       </section>
 
-      <ProductGrid products={data.products} />
+      <div className="catalog-layout">
+        <FilterSidebar
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+
+        <div className="catalog-results">
+          <ProductGrid products={data.products} />
+        </div>
+      </div>
     </main>
   );
 }

@@ -1,15 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "../services/productService";
+import { getProducts, getProductsByCategory } from "../services/productService";
 
-export function useProducts({ limit = 12, skip = 0, sortBy, order } = {}) {
+export function useProducts({
+  limit = 12,
+  skip = 0,
+  sortBy,
+  order,
+  category = "",
+} = {}) {
   return useQuery({
-    queryKey: ["products", { limit, skip, sortBy, order }],
-    queryFn: () =>
-      getProducts({
+    queryKey: [
+      "products",
+      {
         limit,
         skip,
         sortBy,
         order,
-      }),
+        category,
+      },
+    ],
+
+    queryFn: () => {
+      if (category) {
+        return getProductsByCategory(category, {
+          limit,
+          skip,
+        });
+      }
+
+      return getProducts({
+        limit,
+        skip,
+        sortBy,
+        order,
+      });
+    },
   });
 }
