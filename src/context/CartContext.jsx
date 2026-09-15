@@ -1,5 +1,8 @@
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { CartContext } from "./cartContext";
+import { readStorage, writeStorage } from "../utils/storage";
+
+const CART_STORAGE_KEY = "cart";
 
 const FREE_SHIPPING_THRESHOLD = 100;
 const STANDARD_SHIPPING_COST = 9.99;
@@ -8,6 +11,10 @@ const TAX_RATE = 0.08;
 const initialState = {
   items: [],
 };
+
+function getInitialState() {
+  return readStorage(CART_STORAGE_KEY, initialState);
+}
 
 function roundCurrency(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -82,7 +89,15 @@ function cartReducer(state, action) {
 }
 
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [state, dispatch] = useReducer(
+    cartReducer,
+    initialState,
+    getInitialState,
+  );
+
+  useEffect(() => {
+    writeStorage(CART_STORAGE_KEY, state);
+  }, [state]);
 
   const addToCart = useCallback((product, quantity = 1) => {
     if (!product || product.stock <= 0) {

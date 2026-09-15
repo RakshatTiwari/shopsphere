@@ -1,9 +1,16 @@
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { WishlistContext } from "./wishlistContext";
+import { readStorage, writeStorage } from "../utils/storage";
+
+const WISHLIST_STORAGE_KEY = "wishlist";
 
 const initialState = {
   items: [],
 };
+
+function getInitialState() {
+  return readStorage(WISHLIST_STORAGE_KEY, initialState);
+}
 
 function wishlistReducer(state, action) {
   switch (action.type) {
@@ -38,7 +45,15 @@ function wishlistReducer(state, action) {
 }
 
 export function WishlistProvider({ children }) {
-  const [state, dispatch] = useReducer(wishlistReducer, initialState);
+  const [state, dispatch] = useReducer(
+    wishlistReducer,
+    initialState,
+    getInitialState,
+  );
+
+  useEffect(() => {
+    writeStorage(WISHLIST_STORAGE_KEY, state);
+  }, [state]);
 
   const toggleWishlist = useCallback((product) => {
     if (!product) {
