@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 import ProductGallery from "../components/products/ProductGallery";
 import { useProduct } from "../hooks/useProduct";
@@ -6,6 +7,9 @@ import "./ProductDetailsPage.css";
 function ProductDetailsPage() {
   const { productId } = useParams();
   const { data: product, isLoading, isError, error } = useProduct(productId);
+
+  const [quantity, setQuantity] = useState(1);
+  const [cartMessage, setCartMessage] = useState("");
 
   if (isLoading) {
     return (
@@ -50,12 +54,35 @@ function ProductDetailsPage() {
   }
 
   const discountPercentage = Math.round(product.discountPercentage);
+
   const originalPrice =
     discountPercentage > 0
       ? product.price / (1 - discountPercentage / 100)
       : product.price;
 
   const isInStock = product.stock > 0;
+
+  function handleDecreaseQuantity() {
+    setQuantity((currentQuantity) => Math.max(1, currentQuantity - 1));
+    setCartMessage("");
+  }
+
+  function handleIncreaseQuantity() {
+    setQuantity((currentQuantity) =>
+      Math.min(product.stock, currentQuantity + 1),
+    );
+    setCartMessage("");
+  }
+
+  function handleAddToCart() {
+    if (!isInStock) {
+      return;
+    }
+
+    setCartMessage(
+      `${quantity} ${quantity === 1 ? "item" : "items"} ready to add to cart.`,
+    );
+  }
 
   return (
     <main className="page">
@@ -118,6 +145,57 @@ function ProductDetailsPage() {
           >
             {isInStock ? `${product.stock} units in stock` : "Out of stock"}
           </div>
+
+          <section className="purchase-controls" aria-label="Purchase options">
+            <div className="quantity-section">
+              <span className="quantity-label">Quantity</span>
+
+              <div className="quantity-control">
+                <button
+                  className="quantity-button"
+                  type="button"
+                  onClick={handleDecreaseQuantity}
+                  disabled={!isInStock || quantity <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
+
+                <span
+                  className="quantity-value"
+                  aria-live="polite"
+                  aria-label={`Quantity ${quantity}`}
+                >
+                  {quantity}
+                </span>
+
+                <button
+                  className="quantity-button"
+                  type="button"
+                  onClick={handleIncreaseQuantity}
+                  disabled={!isInStock || quantity >= product.stock}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <button
+              className="add-to-cart-button"
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!isInStock}
+            >
+              {isInStock ? "Add to Cart" : "Out of Stock"}
+            </button>
+
+            {cartMessage && (
+              <p className="cart-action-message" role="status">
+                {cartMessage}
+              </p>
+            )}
+          </section>
 
           <div className="product-details-description">
             <h2>About this product</h2>
