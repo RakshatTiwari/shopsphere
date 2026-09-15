@@ -19,6 +19,10 @@ function SearchBar() {
     setSearchValue(event.target.value);
   }
 
+  function handleClear() {
+    setSearchValue("");
+  }
+
   return (
     <form className="search-bar" onSubmit={handleSubmit} role="search">
       <label className="search-label" htmlFor="product-search">
@@ -44,7 +48,7 @@ function SearchBar() {
           <button
             className="search-clear"
             type="button"
-            onClick={() => setSearchValue("")}
+            onClick={handleClear}
             aria-label="Clear search"
           >
             ×

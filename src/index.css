@@ -144,6 +144,15 @@ img {
     box-shadow 160ms ease;
 }
 
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input::-ms-clear {
+  display: none;
+}
+
 .search-input::placeholder {
   color: #94a3b8;
 }
