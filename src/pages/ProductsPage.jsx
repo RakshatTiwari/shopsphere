@@ -1,14 +1,55 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import ProductGrid from "../components/products/ProductGrid";
 import FilterSidebar from "../components/filters/FilterSidebar";
 
 function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedRating, setSelectedRating] = useState("");
 
   const { data, isLoading, isError, error } = useProducts({
     category: selectedCategory,
   });
+
+  const filteredProducts = useMemo(() => {
+    if (!data?.products) {
+      return [];
+    }
+
+    const minimumPrice = minPrice === "" ? null : Number(minPrice);
+
+    const maximumPrice = maxPrice === "" ? null : Number(maxPrice);
+
+    const minimumRating = selectedRating === "" ? null : Number(selectedRating);
+
+    return data.products.filter((product) => {
+      const matchesMinimumPrice =
+        minimumPrice === null || product.price >= minimumPrice;
+
+      const matchesMaximumPrice =
+        maximumPrice === null || product.price <= maximumPrice;
+
+      const matchesRating =
+        minimumRating === null || product.rating >= minimumRating;
+
+      return matchesMinimumPrice && matchesMaximumPrice && matchesRating;
+    });
+  }, [data, minPrice, maxPrice, selectedRating]);
+
+  function handleClearFilters() {
+    setSelectedCategory("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSelectedRating("");
+  }
+
+  const hasActiveFilters =
+    selectedCategory !== "" ||
+    minPrice !== "" ||
+    maxPrice !== "" ||
+    selectedRating !== "";
 
   if (isLoading) {
     return (
@@ -53,17 +94,45 @@ function ProductsPage() {
           </p>
         </div>
 
-        <p className="catalog-count">{data.total} products</p>
+        <p className="catalog-count">
+          {filteredProducts.length} of {data.total} products
+        </p>
       </section>
 
       <div className="catalog-layout">
         <FilterSidebar
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
+          selectedRating={selectedRating}
+          onRatingChange={setSelectedRating}
+          onClearFilters={handleClearFilters}
+          hasActiveFilters={hasActiveFilters}
         />
 
         <div className="catalog-results">
-          <ProductGrid products={data.products} />
+          {filteredProducts.length > 0 ? (
+            <ProductGrid products={filteredProducts} />
+          ) : (
+            <section className="empty-results">
+              <p className="empty-results-eyebrow">NO MATCHES</p>
+
+              <h2>No products match these filters.</h2>
+
+              <p>Try adjusting your price range or rating requirements.</p>
+
+              <button
+                className="primary-button"
+                type="button"
+                onClick={handleClearFilters}
+              >
+                Clear filters
+              </button>
+            </section>
+          )}
         </div>
       </div>
     </main>
