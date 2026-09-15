@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
-import { WishlistContext } from "./wishlistContext";
+import { WishlistContext } from "./wishlistContextValue";
 import { readStorage, writeStorage } from "../utils/storage";
 
 const WISHLIST_STORAGE_KEY = "wishlist";

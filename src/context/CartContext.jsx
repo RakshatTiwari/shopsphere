@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
-import { CartContext } from "./cartContext";
+import { CartContext } from "./cartContextValue";
 import { readStorage, writeStorage } from "../utils/storage";
 
 const CART_STORAGE_KEY = "cart";
