@@ -1,11 +1,10 @@
-import { useParams } from "react-router";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import ProductGallery from "../components/products/ProductGallery";
 import { useProduct } from "../hooks/useProduct";
 import "./ProductDetailsPage.css";
 
 function ProductDetailsPage() {
   const { productId } = useParams();
-
   const { data: product, isLoading, isError, error } = useProduct(productId);
 
   if (isLoading) {
@@ -14,7 +13,7 @@ function ProductDetailsPage() {
         <section className="product-details-state">
           <p className="page-eyebrow">PRODUCT</p>
           <h1>Loading product...</h1>
-          <p>We're retrieving the product information. Please wait a moment.</p>
+          <p>We're retrieving the product details.</p>
         </section>
       </main>
     );
@@ -23,17 +22,11 @@ function ProductDetailsPage() {
   if (isError) {
     return (
       <main className="page">
-        <section className="product-details-state product-details-error">
+        <section className="product-details-state">
           <p className="page-eyebrow">PRODUCT</p>
-
           <h1>Unable to load product.</h1>
-
-          <p>
-            {error?.message ||
-              "Something went wrong while retrieving this product."}
-          </p>
-
-          <Link className="primary-button" to="/products">
+          <p>{error.message}</p>
+          <Link className="secondary-button" to="/products">
             Back to products
           </Link>
         </section>
@@ -46,12 +39,9 @@ function ProductDetailsPage() {
       <main className="page">
         <section className="product-details-state">
           <p className="page-eyebrow">PRODUCT</p>
-
           <h1>Product not found.</h1>
-
-          <p>We couldn't find a product matching the requested product ID.</p>
-
-          <Link className="primary-button" to="/products">
+          <p>The requested product could not be found in the catalog.</p>
+          <Link className="secondary-button" to="/products">
             Back to products
           </Link>
         </section>
@@ -59,127 +49,110 @@ function ProductDetailsPage() {
     );
   }
 
-  const {
-    title,
-    description,
-    category,
-    brand,
-    price,
-    discountPercentage,
-    rating,
-    reviews,
-    stock,
-    availabilityStatus,
-    shippingInformation,
-    warrantyInformation,
-    thumbnail,
-  } = product;
-
-  const discount = Math.round(discountPercentage || 0);
-
+  const discountPercentage = Math.round(product.discountPercentage);
   const originalPrice =
-    discount > 0 ? price / (1 - discountPercentage / 100) : price;
+    discountPercentage > 0
+      ? product.price / (1 - discountPercentage / 100)
+      : product.price;
 
-  const reviewCount = Array.isArray(reviews) ? reviews.length : 0;
+  const isInStock = product.stock > 0;
 
   return (
     <main className="page">
-      <div className="product-details-breadcrumb">
-        <Link to="/products">Products</Link>
-        <span aria-hidden="true">/</span>
-        <span>{title}</span>
-      </div>
+      <Link className="product-details-back" to="/products">
+        ← Back to products
+      </Link>
 
       <section className="product-details">
-        <div className="product-details-image-section">
-          <div className="product-details-image-wrapper">
-            {discount > 0 && (
-              <span className="product-details-discount">-{discount}%</span>
-            )}
-
-            <img
-              className="product-details-image"
-              src={thumbnail}
-              alt={title}
-            />
-          </div>
+        <div className="product-details-media">
+          <ProductGallery images={product.images} title={product.title} />
         </div>
 
         <div className="product-details-content">
-          <p className="product-details-category">{category}</p>
+          <p className="page-eyebrow">{product.category}</p>
 
-          <h1 className="product-details-title">{title}</h1>
+          <h1 className="product-details-title">{product.title}</h1>
 
-          {brand && (
+          {product.brand && (
             <p className="product-details-brand">
-              Brand: <strong>{brand}</strong>
+              Brand: <strong>{product.brand}</strong>
             </p>
           )}
 
-          <div
-            className="product-details-rating"
-            aria-label={`Rated ${rating} out of 5`}
-          >
-            <span aria-hidden="true">★</span>
-            <strong>{rating.toFixed(1)}</strong>
+          <div className="product-details-rating">
+            <span className="product-details-rating-value">
+              ★ {product.rating.toFixed(1)}
+            </span>
 
-            {reviewCount > 0 && (
-              <span>
-                {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+            {product.reviews?.length > 0 && (
+              <span className="product-details-review-count">
+                {product.reviews.length} reviews
               </span>
             )}
           </div>
 
-          <div className="product-details-price-block">
-            <span className="product-details-price">${price.toFixed(2)}</span>
+          <div className="product-details-price">
+            <span className="product-details-current-price">
+              ${product.price.toFixed(2)}
+            </span>
 
-            {discount > 0 && (
-              <span className="product-details-original-price">
-                ${originalPrice.toFixed(2)}
-              </span>
+            {discountPercentage > 0 && (
+              <>
+                <span className="product-details-original-price">
+                  ${originalPrice.toFixed(2)}
+                </span>
+
+                <span className="product-details-discount">
+                  {discountPercentage}% off
+                </span>
+              </>
             )}
           </div>
 
           <div
-            className={
-              stock > 0
-                ? "product-details-stock in-stock"
-                : "product-details-stock out-of-stock"
-            }
+            className={`product-details-stock ${
+              isInStock
+                ? "product-details-stock-available"
+                : "product-details-stock-unavailable"
+            }`}
           >
-            {stock > 0 ? `${stock} units in stock` : "Out of stock"}
+            {isInStock ? `${product.stock} units in stock` : "Out of stock"}
           </div>
 
-          {availabilityStatus && (
-            <p className="product-details-availability">{availabilityStatus}</p>
-          )}
+          <div className="product-details-description">
+            <h2>About this product</h2>
+            <p>{product.description}</p>
+          </div>
 
-          <div className="product-details-divider" />
-
-          <section className="product-details-section">
-            <h2>Description</h2>
-            <p>{description}</p>
-          </section>
-
-          <section className="product-details-information">
-            {shippingInformation && (
-              <div className="product-information-item">
-                <span className="product-information-label">Shipping</span>
-                <span>{shippingInformation}</span>
+          <div className="product-details-info">
+            {product.shippingInformation && (
+              <div className="product-details-info-item">
+                <span>Shipping</span>
+                <strong>{product.shippingInformation}</strong>
               </div>
             )}
 
-            {warrantyInformation && (
-              <div className="product-information-item">
-                <span className="product-information-label">Warranty</span>
-                <span>{warrantyInformation}</span>
+            {product.warrantyInformation && (
+              <div className="product-details-info-item">
+                <span>Warranty</span>
+                <strong>{product.warrantyInformation}</strong>
               </div>
             )}
-          </section>
 
-          <Link className="product-details-back-link" to="/products">
-            ← Continue shopping
-          </Link>
+            {product.returnPolicy && (
+              <div className="product-details-info-item">
+                <span>Returns</span>
+                <strong>{product.returnPolicy}</strong>
+              </div>
+            )}
+
+            {product.minimumOrderQuantity && (
+              <div className="product-details-info-item">
+                <span>Minimum order</span>
+                <strong>{product.minimumOrderQuantity} unit(s)</strong>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>
