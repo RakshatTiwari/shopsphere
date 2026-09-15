@@ -1,30 +1,30 @@
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 
 function SearchBar() {
-  const [searchValue, setSearchValue] = useState("");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const searchTerm = searchParams.get("search") || "";
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    const trimmedValue = searchValue.trim();
+    const formData = new FormData(event.currentTarget);
+    const value = formData.get("search")?.trim() || "";
 
-    if (!trimmedValue) {
-      return;
+    if (value) {
+      navigate(`/products?search=${encodeURIComponent(value)}`);
+    } else {
+      navigate("/products");
     }
-
-    console.log("Search submitted:", trimmedValue);
-  }
-
-  function handleChange(event) {
-    setSearchValue(event.target.value);
   }
 
   function handleClear() {
-    setSearchValue("");
+    navigate("/products");
   }
 
   return (
-    <form className="search-bar" onSubmit={handleSubmit} role="search">
+    <form className="search-bar" onSubmit={handleSubmit}>
       <label className="search-label" htmlFor="product-search">
         Search products
       </label>
@@ -35,21 +35,22 @@ function SearchBar() {
         </span>
 
         <input
+          key={searchTerm}
           id="product-search"
           className="search-input"
+          name="search"
           type="search"
-          value={searchValue}
-          onChange={handleChange}
+          defaultValue={searchTerm}
           placeholder="Search products..."
           autoComplete="off"
         />
 
-        {searchValue && (
+        {searchTerm && (
           <button
             className="search-clear"
             type="button"
-            onClick={handleClear}
             aria-label="Clear search"
+            onClick={handleClear}
           >
             ×
           </button>

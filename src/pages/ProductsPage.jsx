@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { useProducts } from "../hooks/useProducts";
 import ProductGrid from "../components/products/ProductGrid";
 import FilterSidebar from "../components/filters/FilterSidebar";
@@ -8,34 +9,35 @@ import Pagination from "../components/catalog/Pagination";
 const PRODUCTS_PER_PAGE = 12;
 
 function ProductsPage() {
+  const [searchParams] = useSearchParams();
+
+  const searchTerm = searchParams.get("search")?.trim() || "";
+
   const [selectedCategory, setSelectedCategory] = useState("");
-
   const [minPrice, setMinPrice] = useState("");
-
   const [maxPrice, setMaxPrice] = useState("");
-
   const [selectedRating, setSelectedRating] = useState("");
-
   const [sortBy, setSortBy] = useState("relevance");
-
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, isError, error } = useProducts({
     category: selectedCategory,
+    search: searchTerm,
   });
 
+  const products = useMemo(() => data?.products ?? [], [data]);
+
   const filteredAndSortedProducts = useMemo(() => {
-    if (!data?.products) {
-      return [];
-    }
-
     const minimumPrice = minPrice === "" ? null : Number(minPrice);
-
     const maximumPrice = maxPrice === "" ? null : Number(maxPrice);
-
     const minimumRating = selectedRating === "" ? null : Number(selectedRating);
 
-    const filteredProducts = data.products.filter((product) => {
+    const filteredProducts = products.filter((product) => {
+      const matchesCategory =
+        searchTerm !== ""
+          ? selectedCategory === "" || product.category === selectedCategory
+          : true;
+
       const matchesMinimumPrice =
         minimumPrice === null || product.price >= minimumPrice;
 
@@ -45,7 +47,12 @@ function ProductsPage() {
       const matchesRating =
         minimumRating === null || product.rating >= minimumRating;
 
-      return matchesMinimumPrice && matchesMaximumPrice && matchesRating;
+      return (
+        matchesCategory &&
+        matchesMinimumPrice &&
+        matchesMaximumPrice &&
+        matchesRating
+      );
     });
 
     return [...filteredProducts].sort((productA, productB) => {
@@ -64,7 +71,15 @@ function ProductsPage() {
           return productA.id - productB.id;
       }
     });
-  }, [data, minPrice, maxPrice, selectedRating, sortBy]);
+  }, [
+    products,
+    searchTerm,
+    selectedCategory,
+    minPrice,
+    maxPrice,
+    selectedRating,
+    sortBy,
+  ]);
 
   const totalPages = Math.ceil(
     filteredAndSortedProducts.length / PRODUCTS_PER_PAGE,
@@ -72,7 +87,6 @@ function ProductsPage() {
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-
     const endIndex = startIndex + PRODUCTS_PER_PAGE;
 
     return filteredAndSortedProducts.slice(startIndex, endIndex);
@@ -122,7 +136,9 @@ function ProductsPage() {
     return (
       <main className="page">
         <section className="page-header">
-          <p className="page-eyebrow">CATALOG</p>
+          <p className="page-eyebrow">
+            {searchTerm ? "SEARCH RESULTS" : "CATALOG"}
+          </p>
 
           <h1>Loading products...</h1>
 
@@ -152,12 +168,18 @@ function ProductsPage() {
     <main className="page">
       <section className="catalog-header">
         <div>
-          <p className="page-eyebrow">CATALOG</p>
+          <p className="page-eyebrow">
+            {searchTerm ? "SEARCH RESULTS" : "CATALOG"}
+          </p>
 
-          <h1>Explore products</h1>
+          <h1>
+            {searchTerm ? `Results for "${searchTerm}"` : "Explore products"}
+          </h1>
 
           <p className="page-description">
-            Discover products across a wide range of categories.
+            {searchTerm
+              ? `Products matching your search for "${searchTerm}".`
+              : "Discover products across a wide range of categories."}
           </p>
         </div>
 
@@ -212,9 +234,9 @@ function ProductsPage() {
             <section className="empty-results">
               <p className="empty-results-eyebrow">NO MATCHES</p>
 
-              <h2>No products match these filters.</h2>
+              <h2>No products match your search.</h2>
 
-              <p>Try adjusting your price range or rating requirements.</p>
+              <p>Try a different search term or adjust your filters.</p>
 
               <button
                 className="primary-button"

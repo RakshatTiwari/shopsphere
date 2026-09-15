@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getProductsByCategory } from "../services/productService";
+import {
+  getProducts,
+  getProductsByCategory,
+  searchProducts,
+} from "../services/productService";
 
 export function useProducts({
   limit = 0,
@@ -7,6 +11,7 @@ export function useProducts({
   sortBy,
   order,
   category = "",
+  search = "",
 } = {}) {
   return useQuery({
     queryKey: [
@@ -17,10 +22,18 @@ export function useProducts({
         sortBy,
         order,
         category,
+        search,
       },
     ],
 
     queryFn: () => {
+      if (search) {
+        return searchProducts(search, {
+          limit,
+          skip,
+        });
+      }
+
       if (category) {
         return getProductsByCategory(category, {
           limit,
