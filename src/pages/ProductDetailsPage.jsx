@@ -10,7 +10,13 @@ import "./ProductDetailsPage.css";
 function ProductDetailsPage() {
   const { productId } = useParams();
 
-  const { data: product, isLoading, isError, error } = useProduct(productId);
+  const {
+    data: product,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useProduct(productId);
 
   const { addToCart } = useCart();
 
@@ -37,8 +43,20 @@ function ProductDetailsPage() {
       <main className="page">
         <section className="product-details-state">
           <p className="page-eyebrow">PRODUCT</p>
+
           <h1>Unable to load product.</h1>
-          <p>{error.message}</p>
+
+          <p>We couldn't retrieve this product right now. Please try again.</p>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            {isFetching ? "Trying again..." : "Try again"}
+          </button>
+
           <Link className="secondary-button" to="/products">
             Back to products
           </Link>

@@ -20,7 +20,7 @@ function ProductsPage() {
   const [sortBy, setSortBy] = useState("relevance");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, isError, error } = useProducts({
+  const { data, isLoading, isError, refetch, isFetching } = useProducts({
     category: selectedCategory,
     search: searchTerm,
   });
@@ -153,12 +153,25 @@ function ProductsPage() {
   if (isError) {
     return (
       <main className="page">
-        <section className="page-header">
-          <p className="page-eyebrow">CATALOG</p>
+        <section className="product-details-state">
+          <p className="page-eyebrow">
+            {searchTerm ? "SEARCH RESULTS" : "CATALOG"}
+          </p>
 
           <h1>Unable to load products.</h1>
 
-          <p className="page-description">{error.message}</p>
+          <p className="page-description">
+            We couldn't retrieve the catalog right now. Please try again.
+          </p>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            {isFetching ? "Trying again..." : "Try again"}
+          </button>
         </section>
       </main>
     );
@@ -232,11 +245,21 @@ function ProductsPage() {
             </>
           ) : (
             <section className="empty-results">
-              <p className="empty-results-eyebrow">NO MATCHES</p>
+              <p className="empty-results-eyebrow">
+                {searchTerm ? "NO MATCHES" : "NO PRODUCTS"}
+              </p>
 
-              <h2>No products match your search.</h2>
+              <h2>
+                {searchTerm
+                  ? "No products match your search."
+                  : "No products match these filters."}
+              </h2>
 
-              <p>Try a different search term or adjust your filters.</p>
+              <p>
+                {searchTerm
+                  ? "Try a different search term or adjust your filters."
+                  : "Try adjusting your filters to see more products."}
+              </p>
 
               <button
                 className="primary-button"

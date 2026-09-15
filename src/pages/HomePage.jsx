@@ -12,9 +12,17 @@ function HomePage() {
     data: categoriesData,
     isLoading: categoriesLoading,
     isError: categoriesError,
+    refetch: refetchCategories,
+    isFetching: categoriesFetching,
   } = useCategories();
 
-  const { data, isLoading, isError } = useProducts({
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch: refetchFeaturedProducts,
+    isFetching: featuredProductsFetching,
+  } = useProducts({
     limit: FEATURED_PRODUCTS_LIMIT,
   });
 
@@ -127,11 +135,18 @@ function HomePage() {
             <p className="home-status-eyebrow">UNAVAILABLE</p>
             <h3>Categories couldn&apos;t be loaded.</h3>
             <p>
-              You can still browse the complete catalog and use its filters.
+              We couldn&apos;t retrieve the latest categories right now. Please
+              try again.
             </p>
-            <Link className="primary-button" to="/products">
-              Open catalog
-            </Link>
+
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => refetchCategories()}
+              disabled={categoriesFetching}
+            >
+              {categoriesFetching ? "Trying again..." : "Try again"}
+            </button>
           </div>
         )}
 
@@ -162,6 +177,7 @@ function HomePage() {
             <p className="home-status-eyebrow">NO CATEGORIES</p>
             <h3>No categories are currently available.</h3>
             <p>Open the catalog to explore the available products.</p>
+
             <Link className="primary-button" to="/products">
               Open catalog
             </Link>
@@ -195,10 +211,19 @@ function HomePage() {
           <div className="home-status">
             <p className="home-status-eyebrow">UNAVAILABLE</p>
             <h3>Featured products couldn&apos;t be loaded.</h3>
-            <p>Visit the catalog to try again and continue browsing.</p>
-            <Link className="primary-button" to="/products">
-              Open catalog
-            </Link>
+            <p>
+              We couldn&apos;t retrieve featured products right now. Please try
+              again.
+            </p>
+
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => refetchFeaturedProducts()}
+              disabled={featuredProductsFetching}
+            >
+              {featuredProductsFetching ? "Trying again..." : "Try again"}
+            </button>
           </div>
         )}
 
@@ -211,6 +236,7 @@ function HomePage() {
             <p className="home-status-eyebrow">NO PRODUCTS</p>
             <h3>The featured catalog is currently empty.</h3>
             <p>Open the catalog to explore available products.</p>
+
             <Link className="primary-button" to="/products">
               Open catalog
             </Link>
