@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getProducts, getProductsByCategory } from "../services/productService";
 
 export function useProducts({
-  limit = 12,
+  limit = 0,
   skip = 0,
   sortBy,
   order,
@@ -35,5 +35,7 @@ export function useProducts({
         order,
       });
     },
+
+    staleTime: 5 * 60 * 1000,
   });
 }

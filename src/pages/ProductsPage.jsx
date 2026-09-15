@@ -1,19 +1,30 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import ProductGrid from "../components/products/ProductGrid";
 import FilterSidebar from "../components/filters/FilterSidebar";
+import SortSelect from "../components/catalog/SortSelect";
+import Pagination from "../components/catalog/Pagination";
+
+const PRODUCTS_PER_PAGE = 12;
 
 function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
+
   const [minPrice, setMinPrice] = useState("");
+
   const [maxPrice, setMaxPrice] = useState("");
+
   const [selectedRating, setSelectedRating] = useState("");
+
+  const [sortBy, setSortBy] = useState("relevance");
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, isError, error } = useProducts({
     category: selectedCategory,
   });
 
-  const filteredProducts = useMemo(() => {
+  const filteredAndSortedProducts = useMemo(() => {
     if (!data?.products) {
       return [];
     }
@@ -24,7 +35,7 @@ function ProductsPage() {
 
     const minimumRating = selectedRating === "" ? null : Number(selectedRating);
 
-    return data.products.filter((product) => {
+    const filteredProducts = data.products.filter((product) => {
       const matchesMinimumPrice =
         minimumPrice === null || product.price >= minimumPrice;
 
@@ -36,13 +47,47 @@ function ProductsPage() {
 
       return matchesMinimumPrice && matchesMaximumPrice && matchesRating;
     });
-  }, [data, minPrice, maxPrice, selectedRating]);
+
+    return [...filteredProducts].sort((productA, productB) => {
+      switch (sortBy) {
+        case "price-low":
+          return productA.price - productB.price;
+
+        case "price-high":
+          return productB.price - productA.price;
+
+        case "rating":
+          return productB.rating - productA.rating;
+
+        case "relevance":
+        default:
+          return productA.id - productB.id;
+      }
+    });
+  }, [data, minPrice, maxPrice, selectedRating, sortBy]);
+
+  const totalPages = Math.ceil(
+    filteredAndSortedProducts.length / PRODUCTS_PER_PAGE,
+  );
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+
+    const endIndex = startIndex + PRODUCTS_PER_PAGE;
+
+    return filteredAndSortedProducts.slice(startIndex, endIndex);
+  }, [filteredAndSortedProducts, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, minPrice, maxPrice, selectedRating, sortBy]);
 
   function handleClearFilters() {
     setSelectedCategory("");
     setMinPrice("");
     setMaxPrice("");
     setSelectedRating("");
+    setSortBy("relevance");
   }
 
   const hasActiveFilters =
@@ -95,7 +140,7 @@ function ProductsPage() {
         </div>
 
         <p className="catalog-count">
-          {filteredProducts.length} of {data.total} products
+          {filteredAndSortedProducts.length} of {data.total} products
         </p>
       </section>
 
@@ -114,8 +159,33 @@ function ProductsPage() {
         />
 
         <div className="catalog-results">
-          {filteredProducts.length > 0 ? (
-            <ProductGrid products={filteredProducts} />
+          <div className="catalog-toolbar">
+            <p className="results-summary">
+              Showing{" "}
+              {filteredAndSortedProducts.length === 0
+                ? 0
+                : (currentPage - 1) * PRODUCTS_PER_PAGE + 1}
+              –
+              {Math.min(
+                currentPage * PRODUCTS_PER_PAGE,
+                filteredAndSortedProducts.length,
+              )}{" "}
+              of {filteredAndSortedProducts.length}
+            </p>
+
+            <SortSelect sortBy={sortBy} onSortChange={setSortBy} />
+          </div>
+
+          {paginatedProducts.length > 0 ? (
+            <>
+              <ProductGrid products={paginatedProducts} />
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           ) : (
             <section className="empty-results">
               <p className="empty-results-eyebrow">NO MATCHES</p>
