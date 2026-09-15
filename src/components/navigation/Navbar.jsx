@@ -1,7 +1,10 @@
 import { Link, NavLink } from "react-router";
 import SearchBar from "../search/SearchBar";
+import { useCart } from "../../hooks/useCart";
 
 function Navbar() {
+  const { cartItemCount } = useCart();
+
   return (
     <header className="navbar">
       <div className="navbar-inner">
@@ -48,6 +51,14 @@ function Navbar() {
             to="/cart"
           >
             Cart
+            {cartItemCount > 0 && (
+              <span
+                className="cart-count"
+                aria-label={`${cartItemCount} items`}
+              >
+                {cartItemCount}
+              </span>
+            )}
           </NavLink>
         </nav>
       </div>

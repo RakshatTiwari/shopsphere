@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import ProductGallery from "../components/products/ProductGallery";
+import { useCart } from "../hooks/useCart";
 import { useProduct } from "../hooks/useProduct";
 import "./ProductDetailsPage.css";
 
 function ProductDetailsPage() {
   const { productId } = useParams();
   const { data: product, isLoading, isError, error } = useProduct(productId);
+  const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
   const [cartMessage, setCartMessage] = useState("");
@@ -79,8 +81,10 @@ function ProductDetailsPage() {
       return;
     }
 
+    addToCart(product, quantity);
+
     setCartMessage(
-      `${quantity} ${quantity === 1 ? "item" : "items"} ready to add to cart.`,
+      `${quantity} ${quantity === 1 ? "item" : "items"} added to cart.`,
     );
   }
 
