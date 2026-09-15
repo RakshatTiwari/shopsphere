@@ -41,6 +41,12 @@ The application provides a complete storefront experience covering the journey f
 
 The project uses the **DummyJSON API** as its product data source and combines **React**, **React Router**, **TanStack Query**, **React Context**, **Vite**, **Vitest**, and **React Testing Library** to build and validate the application.
 
+## 🚀 Live Demo
+
+**[Visit ShopSphere →](https://shopsphere-gamma-blush.vercel.app/)**
+
+Explore the deployed e-commerce storefront and try the full shopping flow, including product discovery, search, filtering, product details, cart, and wishlist.
+
 ### What ShopSphere demonstrates
 
 * Modern React component architecture
